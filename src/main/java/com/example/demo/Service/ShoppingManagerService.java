@@ -1,5 +1,7 @@
 package com.example.demo.Service;
 
+import com.example.demo.DTO.CustomerDtoRequest;
+import com.example.demo.DTO.DashboardDTORequest;
 import com.example.demo.Entities.*;
 import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
@@ -34,4 +36,9 @@ public interface ShoppingManagerService {
     public ResponseEntity<List<Country>> listOfCountries();
 
     public ResponseEntity<List<State>> listOfStates(int id);
+
+    public ResponseEntity<List<CustomerDtoRequest>> listOfUsers();
+
+    public ResponseEntity<List<DashboardDTORequest>> getData();
+
 }

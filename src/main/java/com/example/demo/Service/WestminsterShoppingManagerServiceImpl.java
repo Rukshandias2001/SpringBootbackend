@@ -1,19 +1,28 @@
 package com.example.demo.Service;
 
 import com.example.demo.Config.CloudinaryConfig;
+import com.example.demo.DTO.CustomerDtoRequest;
+import com.example.demo.DTO.DashboardDTORequest;
 import com.example.demo.Entities.*;
+import com.example.demo.Repositories.OrderRepository;
 import com.example.demo.Repositories.ProductRepository;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.example.demo.Repositories.UserRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,6 +34,12 @@ public class WestminsterShoppingManagerServiceImpl implements ShoppingManagerSer
     private CloudinaryConfig cloudinaryConfig;
     @Autowired
     private EntityManager entityManager;
+    @Autowired
+    private OrderRepository orderRepository;
+    @Autowired
+    private UserRepository userRepository;
+
+
 
     @Autowired
     public void setCloudinary(CloudinaryConfig thecloudinaryConfig) {
@@ -180,12 +195,50 @@ public class WestminsterShoppingManagerServiceImpl implements ShoppingManagerSer
         return ResponseEntity.ok().body(resultList);
     }
 
-    public ResponseEntity<List<User>> registerUser(int id){
+    @Override
+    public ResponseEntity<List<CustomerDtoRequest>> listOfUsers() {
+        List<Object[]> listOfUsers = userRepository.findByOrderListByUser();
+        ArrayList<CustomerDtoRequest> listOfCustomers = new ArrayList<>();
+        for(Object[] result:listOfUsers){
+            double price =(double) result[0];
+            int id = (int)result[1];
+            String email = (String)result[2];
+            listOfCustomers.add(new CustomerDtoRequest(email,id,price));
 
-        return null;
+
+        }
+        if(listOfUsers.isEmpty()){
+            return ResponseEntity.ok().body(null);
+        }
+        return ResponseEntity.ok().body(listOfCustomers);
     }
 
+    public ResponseEntity<List<DashboardDTORequest>> getData(){
+        ArrayList<DashboardDTORequest> listOfItems = new ArrayList<>();
+        String sql ="select p.product_name, p.type,p.product_id , SUM(p.quantity*p.price) AS total_Price ,SUM(p.quantity) AS total_quantity,p.price \n" +
+                    "from ordered_product_list  o INNER JOIN product p \n" +
+                    "ON o.image = p.image \n" +
+                    "GROUP by p.product_name ,p.type,p.product_id ,p.price order by total_quantity desc";
+
+        Query nativeQuery = entityManager.createNativeQuery(sql);
+        List <Object[]> resultList =nativeQuery.getResultList();
+        if(!resultList.isEmpty()){
+            for (Object[] result:resultList){
+                String productName = (String) result[0];
+                String type = (String)result[1];
+                long productId= (Long) result[2];
+                double totalPrice =(double) result[3];
+                BigDecimal quantity = (BigDecimal) result[4];
+                double price = (double) result[5];
+                listOfItems.add(new DashboardDTORequest(quantity,totalPrice,productName,type,productId,price));
+
+            }
+            return ResponseEntity.ok().body(listOfItems);
+        }else{
+            return ResponseEntity.ok().body(null);
+        }
 
 
+    }
 
 }

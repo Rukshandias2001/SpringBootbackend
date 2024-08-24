@@ -1,5 +1,7 @@
 package com.example.demo.Controllers;
 
+import com.example.demo.DTO.CustomerDtoRequest;
+import com.example.demo.DTO.DashboardDTORequest;
 import com.example.demo.Entities.*;
 import com.example.demo.Service.ShoppingManagerService;
 import jakarta.websocket.server.PathParam;
@@ -132,8 +134,16 @@ public class ManagerController {
         return shoppingManagerService.deleteProducts(id);
     }
 
+    @GetMapping("getOrdersbyUser")
+    public ResponseEntity<List<CustomerDtoRequest>> getOrdersByUser(){
+       return shoppingManagerService.listOfUsers();
+    }
 
 
+    @GetMapping("getProductDetails")
+    public ResponseEntity<List<DashboardDTORequest>> getDetailsOfProduct(){
+        return shoppingManagerService.getData();
+    }
 
 
 }

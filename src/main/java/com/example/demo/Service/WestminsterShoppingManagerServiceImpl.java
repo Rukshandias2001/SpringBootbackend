@@ -3,6 +3,7 @@ package com.example.demo.Service;
 import com.example.demo.Config.CloudinaryConfig;
 import com.example.demo.DTO.CustomerDtoRequest;
 import com.example.demo.DTO.DashboardDTORequest;
+import com.example.demo.DTO.PieChartDTO;
 import com.example.demo.Entities.*;
 import com.example.demo.Repositories.OrderRepository;
 import com.example.demo.Repositories.ProductRepository;
@@ -240,5 +241,32 @@ public class WestminsterShoppingManagerServiceImpl implements ShoppingManagerSer
 
 
     }
+
+    @Override
+    public ResponseEntity<List<PieChartDTO>> getSoldPercentage() {
+        String sql = "select SUM(quantity) AS total_quantity ,category_id,type,round((SUM(quantity)*100/(select SUM(quantity) from ordered_product_list ))) AS Percentage from ordered_product_list Group by category_id,type";
+        Query nativeQuery = entityManager.createNativeQuery(sql);
+        List <Object[]> resultList =nativeQuery.getResultList();
+
+        ArrayList<PieChartDTO> listOfPercentages = new ArrayList<>();
+        BigDecimal percentageForElectronics = BigDecimal.valueOf(0);
+        Integer categoryId  = 0;
+        String type="";
+        BigDecimal average=BigDecimal.valueOf(0);
+        if(!resultList.isEmpty()){
+            for (Object[] result:resultList){
+                percentageForElectronics = (BigDecimal) result[0];
+                categoryId = (Integer) result[1];
+                type = (String)result[2];
+                average = (BigDecimal) result[3];
+
+                listOfPercentages.add(new PieChartDTO(percentageForElectronics,type,categoryId,average));
+            }
+
+        }
+
+        return ResponseEntity.ok().body(listOfPercentages);
+    }
+
 
 }

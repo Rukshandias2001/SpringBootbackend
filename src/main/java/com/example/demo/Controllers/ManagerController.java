@@ -2,6 +2,7 @@ package com.example.demo.Controllers;
 
 import com.example.demo.DTO.CustomerDtoRequest;
 import com.example.demo.DTO.DashboardDTORequest;
+import com.example.demo.DTO.PieChartDTO;
 import com.example.demo.Entities.*;
 import com.example.demo.Service.ShoppingManagerService;
 import jakarta.websocket.server.PathParam;
@@ -145,5 +146,9 @@ public class ManagerController {
         return shoppingManagerService.getData();
     }
 
+    @GetMapping("getPercentages")
+    public ResponseEntity<List<PieChartDTO>>getPercentageOfProduct(){
+        return shoppingManagerService.getSoldPercentage();
+    }
 
 }

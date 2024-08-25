@@ -2,6 +2,7 @@ package com.example.demo.Service;
 
 import com.example.demo.DTO.CustomerDtoRequest;
 import com.example.demo.DTO.DashboardDTORequest;
+import com.example.demo.DTO.PieChartDTO;
 import com.example.demo.Entities.*;
 import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
@@ -40,5 +41,7 @@ public interface ShoppingManagerService {
     public ResponseEntity<List<CustomerDtoRequest>> listOfUsers();
 
     public ResponseEntity<List<DashboardDTORequest>> getData();
+
+    public ResponseEntity<List<PieChartDTO>> getSoldPercentage();
 
 }

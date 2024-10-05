@@ -31,6 +31,7 @@ public interface UserService {
 
     public ResponseEntity<SelectedItems> selectedProductByQuantityWise(SelectedItems selectedItems, String email);
 
+    public ResponseEntity <List<SelectedItems>> getProductsSortBy(String condition,User user);
 
 
 

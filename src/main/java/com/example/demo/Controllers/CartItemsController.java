@@ -2,6 +2,7 @@ package com.example.demo.Controllers;
 
 import com.example.demo.DTO.OrderRequest;
 import com.example.demo.Entities.*;
+import com.example.demo.Repositories.UserRepository;
 import com.example.demo.Service.OrderService;
 import com.example.demo.Service.ShoppingManagerService;
 import com.example.demo.Service.UserService;
@@ -33,8 +34,8 @@ public class CartItemsController {
 
     @Autowired
     UserService userService;
-
-
+    @Autowired
+    private UserRepository userRepository;
 
 
     @GetMapping("/getProducts")
@@ -154,6 +155,17 @@ public class CartItemsController {
     public ResponseEntity<Page<Product>> getProducts(@RequestParam Integer pageNumber, @RequestParam Integer  size){
         return ResponseEntity.ok().body(shoppingManagerService.getAllProducts(pageNumber.describeConstable().orElse(0), size.describeConstable().orElse(10)).getBody());
 
+    }
+
+    @GetMapping("/sortByProduct")
+    public ResponseEntity<List<SelectedItems>> getSelectedItems(@RequestParam("condition") String condition,
+                                                                @RequestParam("name") String userName,
+                                                                @RequestParam("email") String userEmail){
+
+        User user = new User();
+        user.setEmail(userEmail);
+        user.setUserName(userName);
+        return userService.getProductsSortBy(condition,user);
     }
 
 

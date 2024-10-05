@@ -19,4 +19,13 @@ public interface SelectedProductRepository extends JpaRepository<SelectedItems,I
         List<SelectedItems> findAllByUserId(Integer user_id);
 
         Optional<SelectedItems> removeByProductIdAndEmail(long id, String email);
+
+        // Correct the method name and the parameter annotation
+        @Query("select s from SelectedItems s where s.user.id = :userId order by s.productName ASC")
+        List<SelectedItems> findSelectedItemsByUserIdOrderByProductName(@Param("userId") int userId);
+
+        @Query("select s from SelectedItems s where s.user.id = :userId order by s.price ASC")
+        List<SelectedItems> findSelectedItemsByUserIdOrderByPrice(@Param("userId") int userId);
+
+
 }

@@ -237,6 +237,20 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    public ResponseEntity <List<SelectedItems>> getProductsSortBy(String condition,User user){
+
+        List<SelectedItems> selectedItemsByUserIdOrderBy;
+        Optional<User> byEmail = userRepository.findByEmail(user.getEmail());
+        System.out.println("The id is "+byEmail.get().getId());
+        if(condition.equalsIgnoreCase("productName")){
+            selectedItemsByUserIdOrderBy = selectedProductRepository.findSelectedItemsByUserIdOrderByProductName(byEmail.get().getId());
+        }else{
+            selectedItemsByUserIdOrderBy = selectedProductRepository.findSelectedItemsByUserIdOrderByPrice(byEmail.get().getId());
+        }
+
+        return ResponseEntity.ok().body(selectedItemsByUserIdOrderBy);
+    }
+
 
 
 

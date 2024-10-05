@@ -1,18 +1,17 @@
 package com.example.demo.Service;
-
-import com.cloudinary.api.ApiResponse;
+import org.springframework.data.domain.Page;
 import com.example.demo.Entities.*;
 import com.example.demo.Repositories.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
 import org.checkerframework.checker.units.qual.A;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 
 import java.util.*;
 
@@ -29,6 +28,7 @@ public class OrderServiceImpl implements OrderService {
     UserRepository userRepository;
     @Autowired
     OrderListRepository orderListRepository;
+
 
     @PersistenceContext
     EntityManager entityManager;
@@ -48,6 +48,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public ResponseEntity<Orders> findBYOrderId(Long id) {
+        Orders orders = orderRepository.findById(id).get();
+        return ResponseEntity.ok().body(orders);
+    }
+
+    @Override
     public int addOrder(Orders order) {
         return 0;
     }
@@ -63,13 +69,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public ResponseEntity<List<Orders>>  findOrdersByUser(int id) {
-        List<Orders> ordersByUserId = orderRepository.findOrdersByUserId(id);
+    public ResponseEntity<Page<Orders>>  findOrdersByUser(int id, int page, int size) {
+        Page<Orders> ordersByUserId = orderRepository.findOrdersByUserId(id, PageRequest.of(page, size));
         return ResponseEntity.ok(ordersByUserId) ;
     }
-
-
-
 
 
     @Override
@@ -155,7 +158,25 @@ public class OrderServiceImpl implements OrderService {
         }
 
         System.out.println("Order processed successfully.");
+        upateProduct(orderList,savedOrder.getOrderId());
         return ResponseEntity.ok().body(savedOrder);
+
+    }
+
+    private void upateProduct(ArrayList<OrderedList> orderList,int orderId) {
+       orderList.forEach((data)->{
+           String sql = "select s.* from product_order_table p INNER JOIN `Order` o  ON o.order_id = p.order_id INNER JOIN product s ON p.product_id = s.product_id where  s.image='" +data.getImageUrl()+ "' AND o.order_id =" +orderId;
+           List <Object[]> resultList = entityManager.createNativeQuery(sql).getResultList();
+           Product p1 = new Product();
+           for (Object[] objects : resultList) {
+               Long productId = (Long) objects[3];
+               Product product = productRepository.findById(productId.intValue()).get();
+               int quantity = product.getQuantity();
+               quantity = quantity - data.getQuantity();
+               product.setQuantity(quantity);
+               productRepository.save(product);
+           }
+       });
     }
 
 

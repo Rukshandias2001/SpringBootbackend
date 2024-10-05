@@ -6,13 +6,19 @@ import com.example.demo.Service.OrderService;
 import com.example.demo.Service.ShoppingManagerService;
 import com.example.demo.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.text.html.Option;
+import java.sql.Struct;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin
 @RestController
@@ -67,7 +73,7 @@ public class CartItemsController {
 
 
     @PostMapping("saveOrder")
-    public ResponseEntity saveOrder(@RequestBody  OrderRequest orderRequest){
+    public ResponseEntity saveOrder(@RequestBody  OrderRequest orderRequest) throws ParseException {
 
         Orders order = new Orders();
         order.setDate(orderRequest.getExpiryDate());
@@ -75,6 +81,13 @@ public class CartItemsController {
         order.setCvv(orderRequest.getCvv());
         order.setCardType(orderRequest.getCardType());
         order.setPaidDate(orderRequest.getDate());
+        // Create a SimpleDateFormat for the desired format
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        // Get today's date and format it to "yyyy-MM-dd" format
+        String formattedDate = dateFormat.format(new Date());
+        // Parse the formatted date string back into a Date object
+        Date parsedDate = dateFormat.parse(formattedDate);
+        order.setDate(parsedDate);
 
 
 
@@ -97,9 +110,15 @@ public class CartItemsController {
     }
 
 
+
     @PostMapping("/selectedList")
     public ResponseEntity<SelectedItems> saveFavourites(@RequestBody SelectedItems selectedItems){
         return userService.selectedProduct(selectedItems,selectedItems.getEmail());
+    }
+
+    @PostMapping("/addFavouritesByQuantity")
+    public ResponseEntity<SelectedItems> addFavouritesByQuantity(@RequestBody SelectedItems selectedItems){
+        return userService.selectedProductByQuantityWise(selectedItems,selectedItems.getEmail());
     }
 
 
@@ -120,10 +139,23 @@ public class CartItemsController {
     }
 
     @GetMapping("/getOrdersBYUserId/{id}")
-    public ResponseEntity<List<Orders>> getOrders(@PathVariable("id") int userId){
-        return  orderService.findOrdersByUser(userId);
+    public ResponseEntity<Page<Orders>> getOrders(@PathVariable("id") int userId ,@RequestParam Integer pageNumber, @RequestParam Integer  size){
+        return ResponseEntity.ok().body(orderService.findOrdersByUser(userId,pageNumber.describeConstable().orElse(0),size.describeConstable().orElse(10))).getBody() ;
 
     }
+
+    @GetMapping("/getOrderById/{id}")
+    public ResponseEntity<Orders>gedOrderReciept(@PathVariable("id")String id){
+        Long orderId = Long.parseLong(id);
+        return orderService.findBYOrderId(orderId);
+    }
+
+    @GetMapping("/getAllProducts")
+    public ResponseEntity<Page<Product>> getProducts(@RequestParam Integer pageNumber, @RequestParam Integer  size){
+        return ResponseEntity.ok().body(shoppingManagerService.getAllProducts(pageNumber.describeConstable().orElse(0), size.describeConstable().orElse(10)).getBody());
+
+    }
+
 
 
 

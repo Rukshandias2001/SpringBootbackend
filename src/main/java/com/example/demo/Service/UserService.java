@@ -27,6 +27,10 @@ public interface UserService {
 
     public int findbyEmail(String email);
 
+    public ResponseEntity<ArrayList<String>> getUserRoles(int user_id);
+
+    public ResponseEntity<SelectedItems> selectedProductByQuantityWise(SelectedItems selectedItems, String email);
+
 
 
 

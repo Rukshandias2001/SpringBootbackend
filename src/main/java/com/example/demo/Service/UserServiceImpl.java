@@ -7,6 +7,7 @@ import com.example.demo.Entities.User;
 import com.example.demo.Repositories.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import jakarta.servlet.Servlet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,7 @@ public class UserServiceImpl implements UserService {
     private OrderListRepository orderListRepository;
     @Autowired
     private SelectedProductRepository selectedProductRepository;
+
 
     @PersistenceContext
     EntityManager entityManager;
@@ -107,6 +109,7 @@ public class UserServiceImpl implements UserService {
         User user1 = userRepository.findByEmail(email).get();
         return user1.getId();
     }
+
 
     @Transactional(rollbackFor = {SQLException.class, Exception.class})
     public ResponseEntity<SelectedItems> selectedProduct(SelectedItems selectedItems, String email) {
@@ -172,6 +175,68 @@ public class UserServiceImpl implements UserService {
         }
         return ResponseEntity.ok().body(null);
     }
+
+    @Override
+    public ResponseEntity<ArrayList<String>> getUserRoles(int user_id) {
+
+        String sql = "select r.name from user_role u Inner join `role` r ON u.role_id = r.role_id where u.user_id = " + user_id;
+
+        // Execute the query and retrieve the result list
+        Query nativeQuery = entityManager.createNativeQuery(sql);
+        List<Object> resultList = nativeQuery.getResultList(); // Return as List<Object>
+
+        // Convert the result list to an ArrayList of Strings
+        ArrayList<String> listOfRoles = new ArrayList<>();
+        for (Object roleName : resultList) {
+            listOfRoles.add((String) roleName); // Cast each result to a String and add to the list
+        }
+
+        // Return the list of roles as a ResponseEntity
+        return ResponseEntity.ok().body(listOfRoles);
+
+    }
+
+
+    @Transactional(rollbackFor = {SQLException.class, Exception.class})
+    public ResponseEntity<SelectedItems> selectedProductByQuantityWise(SelectedItems selectedItems, String email) {
+        try {
+            int id = findbyEmail(email);
+            User user = userRepository.findById((long) id).orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Ensure the selectedItems has the user set correctly
+            selectedItems.setUser(user);
+
+            SelectedItems existingItem = selectedProductRepository.findByProductIdAndUserId(selectedItems.getProductId(), id);
+
+            if (existingItem != null) {
+                // Update the existing item
+                existingItem.setQuantity(selectedItems.getQuantity());
+                selectedItems = entityManager.merge(existingItem);
+            } else {
+                // Save the new item as a separate entry
+                selectedItems = entityManager.merge(selectedItems);
+            }
+
+            // Add the item to the user's selected items list
+            if (user.getSelectedItemsList() == null) {
+                user.setSelectedItemsList(new ArrayList<>());
+            }
+
+            // Avoid duplicating the item in the user's list
+            if (!user.getSelectedItemsList().contains(selectedItems)) {
+                user.getSelectedItemsList().add(selectedItems);
+            }
+
+            log.info("Selecting the product from the Database");
+            return ResponseEntity.ok().body(selectedItems);
+
+        } catch (Exception e) {
+            log.error("Error selecting product: {}", e.getMessage());
+            return ResponseEntity.ok().body(null);
+        }
+    }
+
+
 
 
 

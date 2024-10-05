@@ -3,6 +3,8 @@ package com.example.demo.Repositories;
 import com.example.demo.Entities.Orders;
 import com.example.demo.Entities.User;
 import jakarta.persistence.Table;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,7 +22,12 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
     Orders findOrderByOrderIdAndUserId(@Param("orderId") int orderId, @Param("userId") int userId);
 
     @Query("Select o From Orders o WHERE o.user.id=:userId")
-    List<Orders> findOrdersByUserId(int userId);
+    Page<Orders> findOrdersByUserId(int userId, Pageable pageable);
+
+    @Query("SELECT o,u.email from Orders o JOIN User u ON o.user.id = u.id order by o.orderId  Desc limit  3")
+    List<Orders> findOrdersDesc();
+
+
 
 
 }

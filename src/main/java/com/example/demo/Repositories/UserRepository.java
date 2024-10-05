@@ -18,7 +18,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
 
-    User findByEmailAndUserName(String email, String userName);
+
 
 
     @Query("SELECT SUM(o.price) AS total_price, u.id, u.email " +

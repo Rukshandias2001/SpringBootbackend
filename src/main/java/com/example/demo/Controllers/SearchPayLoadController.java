@@ -18,7 +18,7 @@ public class SearchPayLoadController {
     SearchPayloadService searchPayloadService;
 
     @GetMapping("/searchResult")
-    public ResponseEntity<List<Product>> searchProduct(
+    public ResponseEntity<Page<Product>> searchProduct(
             @RequestParam(required = false) String nameOfProduct,
             @RequestParam(required = false) Integer searchFrom,
             @RequestParam(required = false) Integer searchTo,
@@ -46,7 +46,9 @@ public class SearchPayLoadController {
         if(productId != null) {
             searchPayload.setProductId(productId);
         }
-        return searchPayloadService.findProduct(searchPayload);
+        return ResponseEntity.ok().body(searchPayloadService.findProduct(searchPayload,pageNumber,size));
+
+
     }
 
 }

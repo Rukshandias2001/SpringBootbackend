@@ -14,10 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,14 +65,13 @@ public class SearchPayloadImpl implements SearchPayloadService{
 
         // Execute the query and get results
         List<Product> listOfProduct = entityManager.createQuery(query).getResultList();
-
-
-
         return ResponseEntity.ok().body(listOfProduct);
     }
 
     @Override
-    public ResponseEntity<Page<Product>> findProduct(SearchPayload searchPayload, int page, int size) {
+    public Page<Product> findProduct(SearchPayload searchPayload, int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("price").descending());
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Product> query = cb.createQuery(Product.class);
         Root<Product> findProduct = query.from(Product.class);
@@ -99,33 +95,33 @@ public class SearchPayloadImpl implements SearchPayloadService{
             predicates.add(cb.equal(findProduct.get("type"), searchPayload.getSelectedType()));
         }
 
-        // Apply predicates only if there are any
-        if (!predicates.isEmpty()) {
-            query.where(cb.and(predicates.toArray(new Predicate[0])));
+        // Apply predicates
+        Predicate [] finalQuery = predicates.toArray(new Predicate[0]);
+        if(finalQuery.length>0){
+            cb.and(finalQuery);
+            query.where(finalQuery);
         }
 
-        // Get total count of results for pagination purposes
+
+        // Fetch paginated result list
+        List<Product> productResultList = entityManager.createQuery(query)
+                .setFirstResult(pageable.getPageNumber() * pageable.getPageSize())
+                .setMaxResults(pageable.getPageSize())
+                .getResultList();
+        List<Product> sizeOfList = entityManager.createQuery(query).getResultList();
+
+        // Build count query
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<Product> countRoot = countQuery.from(Product.class);
-        countQuery.select(cb.count(countRoot));
-        countQuery.where(cb.and(predicates.toArray(new Predicate[0]))); // Apply the same predicates
-        Long totalResults = entityManager.createQuery(countQuery).getSingleResult();
+        Predicate[] finalPredicates = predicates.toArray(new Predicate[0]); // Add this line here
+        countQuery.select(cb.count(countRoot)).where(finalPredicates); // Use finalPredicates here
+        // Fetch total count for pagination
 
-        // Create the paginated query
-        TypedQuery<Product> typedQuery = entityManager.createQuery(query);
-        typedQuery.setFirstResult(page * size);  // Set the first result for pagination
-        typedQuery.setMaxResults(size);  // Set the max results for pagination
 
-        // Execute the query and get paginated results
-        List<Product> listOfProduct = typedQuery.getResultList();
 
-        // Create a Page object for pagination response
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Product> productPage = new PageImpl<>(listOfProduct, pageable, totalResults);
 
-        return ResponseEntity.ok().body(productPage);
+        return new PageImpl<>(productResultList, pageable,sizeOfList.size());
     }
-
 
 
 

@@ -11,5 +11,5 @@ public interface SearchPayloadService {
 
     ResponseEntity<List<Product>> findProduct(SearchPayload searchPayload);
 
-    public ResponseEntity<Page<Product>> findProduct(SearchPayload searchPayload, int page, int size);
+    public Page<Product> findProduct(SearchPayload searchPayload, int page, int size) ;
 }

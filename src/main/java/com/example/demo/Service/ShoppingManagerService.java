@@ -59,4 +59,11 @@ public interface ShoppingManagerService {
     public ResponseEntity<List<Product>> getEmptyProducts();
 
     public ResponseEntity<Page<Product>> getAllProducts(int page,int size);
+
+    public ResponseEntity<Page<Orders>> getAllOrders(int page,int size);
+
+    public ResponseEntity<Orders> getOrderById(int order_id);
+
+    public ResponseEntity<User> getUserByOrderId(int order_id);
+
 }

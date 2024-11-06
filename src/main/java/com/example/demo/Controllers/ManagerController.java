@@ -5,13 +5,12 @@ import com.example.demo.DTO.DashboardDTORequest;
 import com.example.demo.DTO.PieChartDTO;
 import com.example.demo.Entities.*;
 import com.example.demo.Service.ShoppingManagerService;
-import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 
@@ -185,6 +184,19 @@ public class ManagerController {
         return  shoppingManagerService.getEmptyProducts();
     }
 
+
+    @GetMapping("getOrders")
+    public ResponseEntity<Page<Orders>> getOrders(@RequestParam(required = false) Integer pageNumber,
+                                                  @RequestParam(required = false) Integer  size){
+
+        return shoppingManagerService.getAllOrders(pageNumber, size);
+    }
+
+
+    @GetMapping("GetUserByOrderId/{id}")
+    public ResponseEntity<User> getUser(@PathVariable("id") int id){
+        return  shoppingManagerService.getUserByOrderId(id);
+    }
 
 
 

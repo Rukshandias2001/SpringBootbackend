@@ -168,6 +168,13 @@ public class CartItemsController {
         return userService.getProductsSortBy(condition,user);
     }
 
+    @GetMapping("/getOrder/{id}")
+    public ResponseEntity<Orders> getOrderById(@PathVariable("id") int id){
+        return  shoppingManagerService.getOrderById(id);
+    }
+
+
+
 
 
 

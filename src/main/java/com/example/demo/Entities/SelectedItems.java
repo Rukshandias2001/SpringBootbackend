@@ -46,6 +46,8 @@ public class SelectedItems {
     @Column(name="email")
     private String email;
 
+
+
     @ManyToOne
     @JoinColumn(name="user_id")
     @JsonIgnore

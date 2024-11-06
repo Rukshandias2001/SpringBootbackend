@@ -28,6 +28,9 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
     List<Orders> findOrdersDesc();
 
 
+    @Query("Select o from Orders  o order by o.date desc ")
+    Page<Orders> findOrdersDesc(Pageable pageable);
+
 
 
 }

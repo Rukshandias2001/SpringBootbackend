@@ -42,6 +42,8 @@ public class WestminsterShoppingManagerServiceImpl implements ShoppingManagerSer
 
 
 
+
+
     @Autowired
     public void setCloudinary(CloudinaryConfig thecloudinaryConfig) {
         this.cloudinaryConfig = thecloudinaryConfig;
@@ -331,6 +333,39 @@ public class WestminsterShoppingManagerServiceImpl implements ShoppingManagerSer
     }
 
 
+    public ResponseEntity<Page<Orders>> getAllOrders(int page,int size) {
+
+        Page <Orders> listOfOrders = orderRepository.findOrdersDesc(PageRequest.of(page, size));
+        return ResponseEntity.ok().body(listOfOrders);
+    }
+
+
+    public ResponseEntity<Orders> getOrderById(int order_id) {
+        Orders byId = orderRepository.findById((long) order_id).get();
+        return ResponseEntity.ok().body(byId);
+    }
+
+
+    public ResponseEntity<User> getUserByOrderId(int order_id){
+        String query = "select u.email, u.name  from `order` o INNER JOIN user u ON o.user_id = u.user_id where o.order_id = :orderId";
+        Query nativeQuery = entityManager.createNativeQuery(query);
+        nativeQuery.setParameter("orderId", order_id);
+
+        List<Object[]> resultList = nativeQuery.getResultList();
+
+        if (resultList.isEmpty()) {
+            return ResponseEntity.notFound().build(); // Return 404 if no user is found
+        }
+
+        Object[] result = resultList.get(0); // Get the first (and likely only) result
+        User user = new User();
+        user.setEmail((String) result[0]); // Email is in the first column
+        user.setLastName((String) result[1]); // Name is in the second column
+
+        return ResponseEntity.ok().body(user);
+
+
+    }
 
 
 

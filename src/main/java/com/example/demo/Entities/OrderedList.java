@@ -38,6 +38,8 @@ public class OrderedList {
     @Column(name = "category_id")
     private int categoryId;
 
+
+
     @ManyToOne
     @JoinColumn(name="order_id")
     @JsonIgnore
